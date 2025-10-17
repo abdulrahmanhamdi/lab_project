@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Available Laboratories</title>
+</head>
+<body>
+    <a href="{% url 'my_reservations' %}">View My Reservations</a>
+    <hr>
+
+    <h1>Available Computer Laboratories</h1>
+
+    <ul>
+        {% for lab in laboratories %}
+            <li>
+                <a href="{% url 'lab_detail' lab.lab_id %}">
+                    {{ lab.lab_adi }}
+                </a> 
+                - (Capacity: {{ lab.kapasite }})
+            </li>
+        {% empty %}
+            <li>No laboratories are currently available.</li>
+        {% endfor %}
+    </ul>
+
+</body>
+</html>

@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Create New Reservation</title>
+</head>
+<body>
+    <h1>Reserve Computer {{ computer.bilgisayar_id }} in Lab {{ computer.lab.lab_adi }}</h1>
+
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Confirm Reservation</button>
+    </form>
+
+    <br>
+    <a href="{% url 'lab_detail' computer.lab.lab_id %}">Cancel and Go Back</a>
+</body>
+</html>

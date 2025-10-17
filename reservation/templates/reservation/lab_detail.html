@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Lab Details - {{ laboratory.lab_adi }}</title>
+</head>
+<body>
+    <h1>{{ laboratory.lab_adi }}</h1>
+    <p>Supervisor: {{ laboratory.sorumlu }}</p>
+
+    <hr>
+
+    <h3>Computers in the Lab:</h3>
+    <ul>
+        {% for pc in computers %}
+            <li>
+                Computer ID: {{ pc.bilgisayar_id }} - 
+                
+                {% if pc.bilgisayar_id in booked_computer_ids %}
+                    <strong><span style="color:red;">Booked Today</span></strong>
+                {% else %}
+                    <a href="{% url 'create_reservation' pc.bilgisayar_id %}">Book Now</a>
+                {% endif %}
+            </li>
+        {% empty %}
+            <li>No computers have been added to this lab.</li>
+        {% endfor %}
+    </ul>
+
+    <br>
+    <a href="{% url 'lab_list' %}">Back to Lab List</a>
+</body>
+</html>

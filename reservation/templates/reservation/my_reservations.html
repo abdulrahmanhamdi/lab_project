@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <title>My Reservations</title>
+</head>
+<body>
+    <h1>My Reservations List</h1>
+
+    {% if reservations %}
+        <ul>
+            {% for res in reservations %}
+                <li>
+                    <strong>Lab:</strong> {{ res.bilgisayar.lab.lab_adi }} | 
+                    <strong>Computer ID:</strong> {{ res.bilgisayar.bilgisayar_id }} | 
+                    <strong>Date:</strong> {{ res.tarih }} | 
+                    <strong>From:</strong> {{ res.baslangic_saati }} <strong>To:</strong> {{ res.bitis_saati }} |
+                    <strong>Status:</strong> {{ res.durum }}
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>You don’t have any reservations yet.</p>
+    {% endif %}
+    
+    <br>
+    <a href="{% url 'lab_list' %}">Back to Home Page</a>
+
+</body>
+</html>
