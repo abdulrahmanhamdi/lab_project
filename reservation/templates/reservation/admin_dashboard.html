@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Dashboard</title>
+</head>
+<body>
+    <h1>Admin Dashboard</h1>
+    <p>Welcome, {{ request.user.username }}</p>
+    <a href="{% url 'logout' %}">Logout</a>
+    <hr>
+
+    <h2>Create New Student</h2>
+    <form method="post">
+        {% csrf_token %}
+        {{ student_form.as_p }}
+        <button type="submit" name="create_student">Create Student</button>
+    </form>
+
+    <hr>
+
+    <h2>Create New Teacher</h2>
+    <form method="post">
+        {% csrf_token %}
+        {{ teacher_form.as_p }}
+        <button type="submit" name="create_teacher">Create Teacher</button>
+    </form>
+
+    <hr>
+    <h2>Create New Laboratory</h2>
+    <form method="post">
+        {% csrf_token %}
+        {{ lab_form.as_p }}
+        <button type="submit" name="create_lab">Create Laboratory</button>
+    </form>
+    <hr>
+    <hr>
+
+    <h2>Registered Students List</h2>
+    {% if students %}
+        <table border="1" style="width:100%;">
+            <thead>
+                <tr>
+                    <th>Username</th>
+                    <th>Full Name</th>
+                    <th>Email (Primary Key)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for student in students %}
+                <tr>
+                    <td>{{ student.user.username }}</td>
+                    <td>{{ student.user.first_name }} {{ student.user.last_name }}</td>
+                    <td>{{ student.ogrenci_email }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>No registered students yet.</p>
+    {% endif %}
+
+    <hr>
+
+    <h2>Registered Teachers List</h2>
+    {% if teachers %}
+        <table border="1" style="width:100%;">
+            <thead>
+                <tr>
+                    <th>Username</th>
+                    <th>Full Name</th>
+                    <th>Teacher ID (Primary Key)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for teacher in teachers %}
+                <tr>
+                    <td>{{ teacher.user.username }}</td>
+                    <td>{{ teacher.user.first_name }} {{ teacher.user.last_name }}</td>
+                    <td>{{ teacher.ogretmen_no }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>No registered teachers yet.</p>
+    {% endif %}
+<hr>
+
+<h2>Registered Laboratories List</h2>
+{% if labs %}
+    <table border="1" style="width:100%;">
+        <thead>
+            <tr>
+                <th>Laboratory Name</th>
+                <th>Capacity</th>
+                <th>Responsible Teacher</th>
+            </tr>
+        </thead>
+<tbody>
+    {% for lab in labs %}
+    <tr>
+        <td>
+            <a href="{% url 'admin_lab_detail' lab.lab_id %}">
+                {{ lab.lab_adi }}
+            </a>
+        </td>
+        <td>{{ lab.kapasite }}</td>
+        <td>{{ lab.sorumlu.user.first_name }} {{ lab.sorumlu.user.last_name }}</td>
+    </tr>
+    {% endfor %}
+</tbody>
+    </table>
+{% else %}
+    <p>No registered laboratories yet.</p>
+{% endif %}
+
+    
+</body>
+</html>

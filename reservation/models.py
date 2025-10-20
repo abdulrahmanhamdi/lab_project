@@ -1,17 +1,15 @@
 from django.db import models
+from django.contrib.auth.models import User
 
-# ---------------- Ogretmen (Teacher) Model ----------------
+# ---------------- Teacher Model ----------------
 class Teacher(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
     ogretmen_no = models.CharField(max_length=50, unique=True, primary_key=True)
-    ad = models.CharField(max_length=100)
-    soyad = models.CharField(max_length=100)
-    email = models.EmailField(unique=True)
-    sifre = models.CharField(max_length=128) 
 
     def __str__(self):
-        return f"{self.ad} {self.soyad}"
+        return f"{self.user.first_name} {self.user.last_name}"
 
-# ---------------- Laboratuvar (Laboratory) Model ----------------
+# ---------------- Laboratory Model ----------------
 class Laboratory(models.Model):
     lab_id = models.AutoField(primary_key=True)
     lab_adi = models.CharField(max_length=150)
@@ -21,7 +19,7 @@ class Laboratory(models.Model):
     def __str__(self):
         return self.lab_adi
 
-# ---------------- Bilgisayar (Computer) Model ----------------
+# ---------------- Computer Model ----------------
 class Computer(models.Model):
     bilgisayar_id = models.AutoField(primary_key=True)
     lab = models.ForeignKey(Laboratory, on_delete=models.CASCADE)
@@ -29,25 +27,35 @@ class Computer(models.Model):
     def __str__(self):
         return f"Computer No: {self.bilgisayar_id} in {self.lab.lab_adi}"
 
-# ---------------- Ogrenci (Student) Model ----------------
+# ---------------- Student Model ----------------
 class Student(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
     ogrenci_email = models.EmailField(unique=True, primary_key=True)
-    ad = models.CharField(max_length=100)
-    soyad = models.CharField(max_length=100)
-    sifre = models.CharField(max_length=128) 
 
     def __str__(self):
-        return self.ogrenci_email
+        return self.user.username
 
-# ---------------- Rezervasyon (Reservation) Model ----------------
+# ---------------- Reservation Model ----------------
 class Reservation(models.Model):
+
+    STATUS_CHOICES = [
+        ('Beklemede', 'Pending'),
+        ('Onaylandı', 'Approved'),
+        ('Reddedildi', 'Rejected'),
+    ]
+
     rezervasyon_id = models.AutoField(primary_key=True)
     ogrenci = models.ForeignKey(Student, on_delete=models.CASCADE)
     bilgisayar = models.ForeignKey(Computer, on_delete=models.CASCADE)
     tarih = models.DateField()
     baslangic_saati = models.TimeField()
     bitis_saati = models.TimeField()
-    durum = models.CharField(max_length=50, default='Onaylandı') 
+
+    durum = models.CharField(
+        max_length=50,
+        choices=STATUS_CHOICES,
+        default='Beklemede'
+    )
 
     def __str__(self):
-        return f"Reservation for {self.ogrenci} on {self.tarih}"
+        return f"Reservation for {self.ogrenci} on {self.tarih} ({self.get_durum_display()})"

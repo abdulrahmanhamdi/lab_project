@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <title>Manage Laboratory {{ lab.lab_adi }}</title>
+</head>
+<body>
+    <h1>Manage Laboratory: {{ lab.lab_adi }}</h1>
+    <p><strong>Responsible Teacher:</strong> {{ lab.sorumlu.user.first_name }} {{ lab.sorumlu.user.last_name }}</p>
+    <p><strong>Defined Capacity:</strong> {{ lab.kapasite }}</p>
+
+    <a href="{% url 'admin_dashboard' %}">Back to Admin Dashboard</a>
+    <hr>
+
+    <h2>Add New Computer</h2>
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" name="add_computer">Add New Computer to This Lab</button>
+    </form>
+
+    <hr>
+
+  <h2>Computers in Laboratory (Total: {{ computers.count }})</h2>
+{% if computers %}
+    <table border="1" style="width: 50%;">
+        <thead>
+            <tr>
+                <th>Computer ID</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for pc in computers %}
+            <tr>
+                <td>{{ pc.bilgisayar_id }}</td>
+                <td>
+                    <form method="post" style="display:inline;">
+                        {% csrf_token %}
+                        <input type="hidden" name="computer_id" value="{{ pc.bilgisayar_id }}">
+                        <button type="submit" name="delete_computer" style="color:red;">Delete</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% else %}
+    <p>No computers have been added to this lab yet.</p>
+{% endif %}
+
+</body>
+</html>
