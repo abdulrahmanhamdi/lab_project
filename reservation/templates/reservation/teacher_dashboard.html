@@ -1,2 +1,61 @@
-<h1>Welcome, TEACHER</h1>
-<a href="{% url 'logout' %}">Logout</a>
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <title>Teacher Dashboard</title>
+</head>
+<body>
+    <h1>Welcome, {{ teacher.user.first_name }}</h1>
+    <a href="{% url 'logout' %}">Logout</a>
+    <hr>
+
+    {% if lab %}
+        <h2>Managing Lab: {{ lab.lab_adi }}</h2>
+        
+        <h3>Pending Reservation Requests:</h3>
+        
+        {% if pending_reservations %}
+            <table border="1" style="width:100%; text-align: left;">
+                <thead>
+                    <tr>
+                        <th>Student</th>
+                        <th>Computer</th>
+                        <th>Date</th>
+                        <th>Time</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for res in pending_reservations %}
+                        <tr>
+                            <td>{{ res.ogrenci.user.username }}</td>
+                            <td>Computer No. {{ res.bilgisayar.bilgisayar_id }}</td>
+                            <td>{{ res.tarih }}</td>
+                            <td>From {{ res.baslangic_saati }} to {{ res.bitis_saati }}</td>
+                            <td>
+                                <form method="post" style="display:inline;">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="reservation_id" value="{{ res.rezervasyon_id }}">
+                                    <button type="submit" name="approve_reservation" style="color:green;">Approve</button>
+                                </form>
+                                
+                                <form method="post" style="display:inline;">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="reservation_id" value="{{ res.rezervasyon_id }}">
+                                    <button type="submit" name="reject_reservation" style="color:red;">Reject</button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p>No pending reservation requests at the moment.</p>
+        {% endif %}
+        
+    {% else %}
+        <p>You are not currently assigned as a manager of any lab.</p>
+    {% endif %}
+
+</body>
+</html>

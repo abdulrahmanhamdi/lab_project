@@ -43,7 +43,7 @@
                 <tr>
                     <th>Username</th>
                     <th>Full Name</th>
-                    <th>Email (Primary Key)</th>
+                    <th>Email</th>
                 </tr>
             </thead>
             <tbody>
@@ -69,7 +69,7 @@
                 <tr>
                     <th>Username</th>
                     <th>Full Name</th>
-                    <th>Teacher ID (Primary Key)</th>
+                    <th>Teacher ID</th>
                 </tr>
             </thead>
             <tbody>
@@ -114,7 +114,52 @@
 {% else %}
     <p>No registered laboratories yet.</p>
 {% endif %}
-
+<hr>
+    <h2>Manage All Reservations in the System</h2>
+    {% if reservations %}
+        <table border="1" style="width:100%;">
+            <thead>
+                <tr>
+                    <th>Student</th>
+                    <th>Laboratory</th>
+                    <th>Computer</th>
+                    <th>Date</th>
+                    <th>Time</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for res in reservations %}
+                <tr>
+                    <td>{{ res.ogrenci.user.username }}</td>
+                    <td>{{ res.bilgisayar.lab.lab_adi }}</td>
+                    <td>{{ res.bilgisayar.bilgisayar_id }}</td>
+                    <td>{{ res.tarih }}</td>
+                    <td>From {{ res.baslangic_saati }} to {{ res.bitis_saati }}</td>
+                    <td>
+                        {% if res.durum == 'Onaylandı' %}
+                            <span style="color:green;">{{ res.get_durum_display }}</span>
+                        {% elif res.durum == 'Reddedildi' %}
+                            <span style="color:red;">{{ res.get_durum_display }}</span>
+                        {% else %}
+                            <span style="color:orange;">{{ res.get_durum_display }}</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <form method="post" style="display:inline;">
+                            {% csrf_token %}
+                            <input type="hidden" name="reservation_id" value="{{ res.rezervasyon_id }}">
+                            <button type="submit" name="delete_reservation" style="color:red;">Cancel Reservation</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>No reservations in the system yet.</p>
+    {% endif %}
     
 </body>
 </html>

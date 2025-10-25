@@ -59,7 +59,49 @@ def admin_dashboard(request):
 def teacher_dashboard(request):
     if not hasattr(request.user, 'teacher'):
         return redirect('login')
-    return render(request, 'reservation/teacher_dashboard.html')
+    
+    # Handle POST requests
+    if request.method == 'POST':
+        reservation_id = request.POST.get('reservation_id')
+        reservation = get_object_or_404(Reservation, pk=reservation_id)
+        
+        # Check which button was clicked
+        if 'approve_reservation' in request.POST:
+            reservation.durum = 'Onaylandı'  # Approved
+            reservation.save()
+            
+        elif 'reject_reservation' in request.POST:
+            reservation.durum = 'Reddedildi'  # Rejected
+            reservation.save()
+            
+        return redirect('teacher_dashboard')
+    
+    # Handle GET requests
+    try:
+        teacher = request.user.teacher
+        lab = Laboratory.objects.get(sorumlu=teacher)
+        computers_in_lab = Computer.objects.filter(lab=lab)
+        
+        pending_reservations = Reservation.objects.filter(
+            bilgisayar__in=computers_in_lab,
+            durum='Beklemede'
+        ).order_by('tarih', 'baslangic_saati')
+        
+        context = {
+            'teacher': teacher,
+            'lab': lab,
+            'pending_reservations': pending_reservations
+        }
+        
+    except (Laboratory.DoesNotExist, Teacher.DoesNotExist):
+        context = {
+            'teacher': request.user.teacher,
+            'lab': None,
+            'pending_reservations': []
+        }
+
+    return render(request, 'reservation/teacher_dashboard.html', context)
+
 
 
 # ------------------- 4. Student Views -------------------
@@ -266,3 +308,56 @@ def admin_lab_detail(request, lab_id):
         'computers': computers_in_lab
     }
     return render(request, 'reservation/admin_lab_detail.html', context)
+
+@login_required
+def admin_dashboard(request):
+    if not request.user.is_superuser:
+        return redirect('login')
+
+    student_form = StudentCreationForm()
+    teacher_form = TeacherCreationForm()
+    lab_form = LaboratoryCreationForm()
+
+    if request.method == 'POST':
+        if 'create_student' in request.POST:
+            student_form = StudentCreationForm(request.POST)
+            if student_form.is_valid():
+                student_form.save()
+                return redirect('admin_dashboard')
+        
+        elif 'create_teacher' in request.POST:
+            teacher_form = TeacherCreationForm(request.POST)
+            if teacher_form.is_valid():
+                teacher_form.save()
+                return redirect('admin_dashboard')
+        
+        elif 'create_lab' in request.POST:
+            lab_form = LaboratoryCreationForm(request.POST)
+            if lab_form.is_valid():
+                lab_form.save()
+                return redirect('admin_dashboard')
+        
+        elif 'delete_reservation' in request.POST:
+            reservation_id_to_delete = request.POST.get('reservation_id')
+            try:
+                res_to_delete = Reservation.objects.get(pk=reservation_id_to_delete)
+                res_to_delete.delete()
+            except Reservation.DoesNotExist:
+                pass
+            return redirect('admin_dashboard')
+
+    all_students = Student.objects.all()
+    all_teachers = Teacher.objects.all()
+    all_labs = Laboratory.objects.all()
+    all_reservations = Reservation.objects.all().order_by('-tarih', '-baslangic_saati')
+
+    context = {
+        'student_form': student_form,
+        'teacher_form': teacher_form,
+        'lab_form': lab_form,
+        'students': all_students,
+        'teachers': all_teachers,
+        'labs': all_labs,
+        'reservations': all_reservations,
+    }
+    return render(request, 'reservation/admin_dashboard.html', context)

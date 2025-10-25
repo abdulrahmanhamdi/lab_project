@@ -49,7 +49,7 @@ class TeacherCreationForm(forms.ModelForm):
         model = Teacher
         fields = ['ogretmen_no']
         labels = {
-            'ogretmen_no': 'Teacher ID (Primary Key)'
+            'ogretmen_no': 'Teacher ID'
         }
 
     def save(self, commit=True):
