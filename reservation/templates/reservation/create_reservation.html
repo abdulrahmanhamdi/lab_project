@@ -5,6 +5,15 @@
     <title>Create New Reservation</title>
 </head>
 <body>
+    {% if messages %}
+        <ul class="messages" style="list-style-type:none; padding:10px; border: 1px solid red; background-color: #fdd;">
+            {% for message in messages %}
+                <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>
+                    {{ message }}
+                </li>
+            {% endfor %}
+        </ul>
+    {% endif %}
     <h1>Reserve Computer {{ computer.bilgisayar_id }} in Lab {{ computer.lab.lab_adi }}</h1>
 
     <form method="post">

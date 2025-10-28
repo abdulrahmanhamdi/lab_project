@@ -5,22 +5,30 @@
     <title>Manage Laboratory {{ lab.lab_adi }}</title>
 </head>
 <body>
-    <h1>Manage Laboratory: {{ lab.lab_adi }}</h1>
-    <p><strong>Responsible Teacher:</strong> {{ lab.sorumlu.user.first_name }} {{ lab.sorumlu.user.last_name }}</p>
-    <p><strong>Defined Capacity:</strong> {{ lab.kapasite }}</p>
+<h1>Manage Laboratory: {{ lab.lab_adi }}</h1>
+<p><strong>Defined Capacity:</strong> {{ lab.kapasite }}</p>
 
-    <a href="{% url 'admin_dashboard' %}">Back to Admin Dashboard</a>
-    <hr>
+<a href="{% url 'admin_dashboard' %}">Return to Main Dashboard</a>
+<hr>
 
-    <h2>Add New Computer</h2>
-    <form method="post">
-        {% csrf_token %}
-        <button type="submit" name="add_computer">Add New Computer to This Lab</button>
-    </form>
+<h2>Edit Laboratory Managers</h2>
+<form method="post">
+    {% csrf_token %}
+    <div style="border: 1px solid #ccc; padding: 10px; max-height: 200px; overflow-y: auto;">
+        {{ managers_form.as_p }}
+    </div>
+    <br>
+    <button type="submit" name="update_managers" style="background-color:blue; color:white;">
+        Save Manager Changes
+    </button>
+</form>
+<hr>
 
-    <hr>
+<h2>Add a New Computer</h2>
+<form method="post">
+<hr>
 
-  <h2>Computers in Laboratory (Total: {{ computers.count }})</h2>
+<h2>Computers in the Laboratory (Count: {{ computers.count }})</h2>
 {% if computers %}
     <table border="1" style="width: 50%;">
         <thead>

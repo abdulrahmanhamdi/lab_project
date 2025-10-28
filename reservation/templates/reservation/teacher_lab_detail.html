@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <title>Manage Lab {{ lab.lab_adi }}</title>
+</head>
+<body>
+    <h1>Manage Lab: {{ lab.lab_adi }} (For Teacher)</h1>
+    
+    <a href="{% url 'teacher_dashboard' %}">Back to Main Dashboard</a>
+    <hr>
+    
+    <h2>Edit Lab Managers (Assistants)</h2>
+    <form method="post">
+        {% csrf_token %}
+        <div style="border: 1px solid #ccc; padding: 10px; max-height: 200px; overflow-y: auto;">
+            {{ managers_form.as_p }}
+        </div>
+        <br>
+        <button type="submit" name="update_managers" style="background-color:blue; color:white;">
+            Save Manager Changes
+        </button>
+    </form>
+    <hr>
+    
+    <h2>Add New Computer</h2>
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" name="add_computer">Add a New Computer to this Lab</button>
+    </form>
+    <hr>
+
+    <h2>Create a Private Reservation (For Teacher)</h2>
+    <p>Use this form to reserve a computer (for exams, maintenance, etc.). The reservation will be automatically approved.</p>
+    <form method="post">
+        {% csrf_token %}
+        {{ teacher_res_form.as_p }}
+        <button type="submit" name="create_teacher_reservation">Confirm Private Reservation</button>
+    </form>
+    <hr>
+    
+    <h2>Computers in the Lab (Total: {{ computers.count }})</h2>
+    {% if computers %}
+        <table border="1" style="width: 50%;">
+            <thead>
+                <tr>
+                    <th>Computer ID</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for pc in computers %}
+                <tr>
+                    <td>{{ pc.bilgisayar_id }}</td>
+                    <td>
+                        <form method="post" style="display:inline;">
+                            {% csrf_token %}
+                            <input type="hidden" name="computer_id" value="{{ pc.bilgisayar_id }}">
+                            <button type="submit" name="delete_computer" style="color:red;">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>No computers have been added to this lab yet.</p>
+    {% endif %}
+
+</body>
+</html>

@@ -1,33 +1,44 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" dir="ltr">
 <head>
     <meta charset="UTF-8">
-    <title>Lab Details - {{ laboratory.lab_adi }}</title>
+    <title>Laboratory Details {{ laboratory.lab_adi }}</title>
 </head>
 <body>
     <h1>{{ laboratory.lab_adi }}</h1>
-    <p>Supervisor: {{ laboratory.sorumlu }}</p>
+
+    <p><strong>Laboratory Managers:</strong></p>
+    <ul>
+        {% for manager in laboratory.managers.all %}
+            <li>{{ manager.first_name }} {{ manager.last_name }}</li>
+        {% empty %}
+            <li>-- No manager assigned --</li>
+        {% endfor %}
+    </ul>
 
     <hr>
 
-    <h3>Computers in the Lab:</h3>
+    <h3>Computers in the Laboratory:</h3>
     <ul>
         {% for pc in computers %}
             <li>
                 Computer ID: {{ pc.bilgisayar_id }} - 
-                
+
                 {% if pc.bilgisayar_id in booked_computer_ids %}
-                    <strong><span style="color:red;">Booked Today</span></strong>
+                    <strong><span style="color:green;">Booked (Approved)</span></strong>
                 {% else %}
                     <a href="{% url 'create_reservation' pc.bilgisayar_id %}">Book Now</a>
                 {% endif %}
             </li>
         {% empty %}
-            <li>No computers have been added to this lab.</li>
+            <li>No computers have been added to this laboratory.</li>
         {% endfor %}
     </ul>
 
     <br>
-    <a href="{% url 'lab_list' %}">Back to Lab List</a>
+    <a href="{% url 'lab_list' %}">Back to Laboratory List</a>
+    <br>
+    <a href="{% url 'my_reservations' %}">View My Reservations</a>
+
 </body>
 </html>

@@ -1,5 +1,5 @@
 from django import forms
-from .models import Reservation, Student, Teacher, Laboratory
+from .models import Reservation, Student, Teacher, Laboratory, Computer
 from django.contrib.auth.models import User
 
 class ReservationForm(forms.ModelForm):
@@ -67,16 +67,53 @@ class TeacherCreationForm(forms.ModelForm):
         return teacher
 
 class LaboratoryCreationForm(forms.ModelForm):
-    sorumlu = forms.ModelChoiceField(
-        queryset=Teacher.objects.all(),
-        label="Responsible Teacher",
-        empty_label="-- Select a Teacher --"
+    managers = forms.ModelMultipleChoiceField(
+        queryset=User.objects.all(), 
+        widget=forms.CheckboxSelectMultiple, 
+        label="Managers (select one or more)",
+        required=False
     )
-
     class Meta:
         model = Laboratory
-        fields = ['lab_adi', 'kapasite', 'sorumlu']
+        fields = ['lab_adi', 'kapasite', 'managers']
         labels = {
             'lab_adi': 'Laboratory Name',
             'kapasite': 'Capacity (Number of Computers)',
         }
+
+class LabManagersForm(forms.ModelForm):
+
+    managers = forms.ModelMultipleChoiceField(
+        queryset=User.objects.all(), 
+        widget=forms.CheckboxSelectMultiple,  
+        label="Managers (select one or more)",
+        required=False 
+    )
+
+    class Meta:
+        model = Laboratory
+        fields = ['managers']
+
+
+class TeacherReservationForm(forms.ModelForm):
+    class Meta:
+        model = Reservation
+        fields = ['bilgisayar', 'tarih', 'baslangic_saati', 'bitis_saati']
+        widgets = {
+            'tarih': forms.DateInput(attrs={'type': 'date'}),
+            'baslangic_saati': forms.TimeInput(attrs={'type': 'time'}),
+            'bitis_saati': forms.TimeInput(attrs={'type': 'time'}),
+        }
+        labels = {
+            'bilgisayar': 'Select Computer',
+            'tarih': 'Date',
+            'baslangic_saati': 'Start Time',
+            'bitis_saati': 'End Time',
+        }
+
+    def __init__(self, *args, **kwargs):
+        lab = kwargs.pop('lab', None)
+        super().__init__(*args, **kwargs)
+
+        if lab:
+            self.fields['bilgisayar'].queryset = Computer.objects.filter(lab=lab)

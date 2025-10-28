@@ -87,33 +87,43 @@
     {% endif %}
 <hr>
 
-<h2>Registered Laboratories List</h2>
+<h2>Laboratories List</h2>
 {% if labs %}
     <table border="1" style="width:100%;">
         <thead>
             <tr>
                 <th>Laboratory Name</th>
                 <th>Capacity</th>
-                <th>Responsible Teacher</th>
+                <th>Managers</th>
             </tr>
         </thead>
-<tbody>
-    {% for lab in labs %}
-    <tr>
-        <td>
-            <a href="{% url 'admin_lab_detail' lab.lab_id %}">
-                {{ lab.lab_adi }}
-            </a>
-        </td>
-        <td>{{ lab.kapasite }}</td>
-        <td>{{ lab.sorumlu.user.first_name }} {{ lab.sorumlu.user.last_name }}</td>
-    </tr>
-    {% endfor %}
-</tbody>
+        <tbody>
+            {% for lab in labs %}
+            <tr>
+                <td>
+                    <a href="{% url 'admin_lab_detail' lab.lab_id %}">
+                        {{ lab.lab_adi }}
+                    </a>
+                </td>
+                <td>{{ lab.kapasite }}</td>
+
+                <td>
+                    <ul>
+                        {% for manager in lab.managers.all %}
+                            <li>{{ manager.username }} ({{ manager.first_name }})</li>
+                        {% empty %}
+                            <li style="color:red;">-- No manager assigned --</li>
+                        {% endfor %}
+                    </ul>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
     </table>
 {% else %}
-    <p>No registered laboratories yet.</p>
+    <p>No laboratories registered yet.</p>
 {% endif %}
+
 <hr>
     <h2>Manage All Reservations in the System</h2>
     {% if reservations %}

@@ -14,7 +14,12 @@ class Laboratory(models.Model):
     lab_id = models.AutoField(primary_key=True)
     lab_adi = models.CharField(max_length=150)
     kapasite = models.IntegerField()
-    sorumlu = models.ForeignKey(Teacher, on_delete=models.SET_NULL, null=True, to_field='ogretmen_no')
+    
+    managers = models.ManyToManyField(
+        User, 
+        related_name='managed_labs',
+        blank=True 
+    )
 
     def __str__(self):
         return self.lab_adi
@@ -45,7 +50,7 @@ class Reservation(models.Model):
     ]
 
     rezervasyon_id = models.AutoField(primary_key=True)
-    ogrenci = models.ForeignKey(Student, on_delete=models.CASCADE)
+    ogrenci = models.ForeignKey(Student, on_delete=models.CASCADE, null=True, blank=True)
     bilgisayar = models.ForeignKey(Computer, on_delete=models.CASCADE)
     tarih = models.DateField()
     baslangic_saati = models.TimeField()
