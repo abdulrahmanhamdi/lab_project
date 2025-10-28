@@ -5,53 +5,65 @@
     <title>Manage Lab {{ lab.lab_adi }}</title>
 </head>
 <body>
-    <h1>Manage Lab: {{ lab.lab_adi }} (For Teacher)</h1>
+    <h1>Manage Lab: {{ lab.lab_adi }} (for Teacher)</h1>
     
-    <a href="{% url 'teacher_dashboard' %}">Back to Main Dashboard</a>
+    <a href="{% url 'teacher_dashboard' %}">Return to Main Dashboard</a>
     <hr>
     
-    <h2>Edit Lab Managers (Assistants)</h2>
+    <h2>Edit Lab Settings (Managers and Working Hours)</h2>
     <form method="post">
         {% csrf_token %}
-        <div style="border: 1px solid #ccc; padding: 10px; max-height: 200px; overflow-y: auto;">
-            {{ managers_form.as_p }}
+        <div style="border: 1px solid #ccc; padding: 10px;">
+            <p><strong>Managers (Assistants):</strong></p>
+            <div style="max-height: 200px; overflow-y: auto; border: 1px solid #eee; padding: 5px;">
+                {{ lab_edit_form.managers }}
+            </div>
+            <hr>
+            <p><strong>Working Hours:</strong></p>
+            {{ lab_edit_form.operating_start_time.label_tag }}
+            {{ lab_edit_form.operating_start_time }}
+            <br>
+            {{ lab_edit_form.operating_end_time.label_tag }}
+            {{ lab_edit_form.operating_end_time }}
         </div>
         <br>
-        <button type="submit" name="update_managers" style="background-color:blue; color:white;">
-            Save Manager Changes
+        <button type="submit" name="update_lab_settings" style="background-color:blue; color:white;">
+            Save Lab Settings
         </button>
     </form>
     <hr>
     
-    <h2>Add New Computer</h2>
-    <form method="post">
-        {% csrf_token %}
-        <button type="submit" name="add_computer">Add a New Computer to this Lab</button>
-    </form>
-    <hr>
-
-    <h2>Create a Private Reservation (For Teacher)</h2>
-    <p>Use this form to reserve a computer (for exams, maintenance, etc.). The reservation will be automatically approved.</p>
+    <h2>Create a Special Reservation (for Teacher)</h2>
+    <p>Use this form to reserve a computer (for exams, maintenance, etc.).</p>
     <form method="post">
         {% csrf_token %}
         {{ teacher_res_form.as_p }}
-        <button type="submit" name="create_teacher_reservation">Confirm Private Reservation</button>
+        <button type="submit" name="create_teacher_reservation">Confirm Special Reservation</button>
+    </form>
+    <hr>
+
+    <h2>Add New Computer</h2>
+    <form method="post">
+        {% csrf_token %}
+        <label for="computer_name">Computer Name:</label>
+        <input type="text" name="computer_name" required>
+        <button type="submit" name="add_computer">Add Computer</button>
     </form>
     <hr>
     
-    <h2>Computers in the Lab (Total: {{ computers.count }})</h2>
+    <h2>Computers in Lab (Count: {{ computers.count }})</h2>
     {% if computers %}
         <table border="1" style="width: 50%;">
             <thead>
                 <tr>
-                    <th>Computer ID</th>
+                    <th>Computer Name</th>
                     <th>Action</th>
                 </tr>
             </thead>
             <tbody>
                 {% for pc in computers %}
                 <tr>
-                    <td>{{ pc.bilgisayar_id }}</td>
+                    <td>{{ pc.computer_name }}</td>
                     <td>
                         <form method="post" style="display:inline;">
                             {% csrf_token %}

@@ -2,59 +2,74 @@
 <html lang="en" dir="ltr">
 <head>
     <meta charset="UTF-8">
-    <title>Manage Laboratory {{ lab.lab_adi }}</title>
+    <title>Manage Lab {{ lab.lab_adi }}</title>
 </head>
 <body>
-<h1>Manage Laboratory: {{ lab.lab_adi }}</h1>
-<p><strong>Defined Capacity:</strong> {{ lab.kapasite }}</p>
+    <h1>Manage Lab: {{ lab.lab_adi }}</h1>
+    <p><strong>Defined Capacity:</strong> {{ lab.kapasite }}</p>
 
-<a href="{% url 'admin_dashboard' %}">Return to Main Dashboard</a>
-<hr>
+    <a href="{% url 'admin_dashboard' %}">Return to Main Dashboard</a>
+    <hr>
 
-<h2>Edit Laboratory Managers</h2>
-<form method="post">
-    {% csrf_token %}
-    <div style="border: 1px solid #ccc; padding: 10px; max-height: 200px; overflow-y: auto;">
-        {{ managers_form.as_p }}
-    </div>
-    <br>
-    <button type="submit" name="update_managers" style="background-color:blue; color:white;">
-        Save Manager Changes
-    </button>
-</form>
-<hr>
+    <h2>Edit Lab Settings (Managers and Working Hours)</h2>
+    <form method="post">
+        {% csrf_token %}
+        <div style="border: 1px solid #ccc; padding: 10px;">
+            <p><strong>Managers:</strong></p>
+            <div style="max-height: 200px; overflow-y: auto; border: 1px solid #eee; padding: 5px;">
+                {{ lab_edit_form.managers }}
+            </div>
+            <hr>
+            <p><strong>Working Hours:</strong></p>
+            {{ lab_edit_form.operating_start_time.label_tag }}
+            {{ lab_edit_form.operating_start_time }}
+            <br>
+            {{ lab_edit_form.operating_end_time.label_tag }}
+            {{ lab_edit_form.operating_end_time }}
+        </div>
+        <br>
+        <button type="submit" name="update_lab_settings" style="background-color:blue; color:white;">
+            Save Lab Settings
+        </button>
+    </form>
+    <hr>
 
-<h2>Add a New Computer</h2>
-<form method="post">
-<hr>
-
-<h2>Computers in the Laboratory (Count: {{ computers.count }})</h2>
-{% if computers %}
-    <table border="1" style="width: 50%;">
-        <thead>
-            <tr>
-                <th>Computer ID</th>
-                <th>Action</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for pc in computers %}
-            <tr>
-                <td>{{ pc.bilgisayar_id }}</td>
-                <td>
-                    <form method="post" style="display:inline;">
-                        {% csrf_token %}
-                        <input type="hidden" name="computer_id" value="{{ pc.bilgisayar_id }}">
-                        <button type="submit" name="delete_computer" style="color:red;">Delete</button>
-                    </form>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-{% else %}
-    <p>No computers have been added to this lab yet.</p>
-{% endif %}
+    <h2>Add New Computer</h2>
+    <form method="post">
+        {% csrf_token %}
+        <label for="computer_name">Computer Name:</label>
+        <input type="text" name="computer_name" required>
+        <button type="submit" name="add_computer">Add Computer</button>
+    </form>
+    <hr>
+    
+    <h2>Computers in Lab (Count: {{ computers.count }})</h2>
+    {% if computers %}
+        <table border="1" style="width: 50%;">
+            <thead>
+                <tr>
+                    <th>Computer Name</th> 
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for pc in computers %}
+                <tr>
+                    <td>{{ pc.computer_name }}</td>
+                    <td>
+                        <form method="post" style="display:inline;">
+                            {% csrf_token %}
+                            <input type="hidden" name="computer_id" value="{{ pc.bilgisayar_id }}">
+                            <button type="submit" name="delete_computer" style="color:red;">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>No computers have been added to this lab yet.</p>
+    {% endif %}
 
 </body>
 </html>

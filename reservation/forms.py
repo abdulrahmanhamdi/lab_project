@@ -81,19 +81,25 @@ class LaboratoryCreationForm(forms.ModelForm):
             'kapasite': 'Capacity (Number of Computers)',
         }
 
-class LabManagersForm(forms.ModelForm):
-
+class LabEditForm(forms.ModelForm):
     managers = forms.ModelMultipleChoiceField(
-        queryset=User.objects.all(), 
-        widget=forms.CheckboxSelectMultiple,  
+        queryset=User.objects.all(),
+        widget=forms.CheckboxSelectMultiple,
         label="Managers (select one or more)",
         required=False 
     )
 
     class Meta:
         model = Laboratory
-        fields = ['managers']
-
+        fields = ['managers', 'operating_start_time', 'operating_end_time']
+        labels = {
+            'operating_start_time': 'Operating Start Time (e.g., 09:00)',
+            'operating_end_time': 'Operating End Time (e.g., 17:00)',
+        }
+        widgets = {
+            'operating_start_time': forms.TimeInput(attrs={'type': 'time'}),
+            'operating_end_time': forms.TimeInput(attrs={'type': 'time'}),
+        }
 
 class TeacherReservationForm(forms.ModelForm):
     class Meta:

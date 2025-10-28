@@ -10,16 +10,20 @@ class Teacher(models.Model):
         return f"{self.user.first_name} {self.user.last_name}"
 
 # ---------------- Laboratory Model ----------------
+# في reservation/models.py
 class Laboratory(models.Model):
     lab_id = models.AutoField(primary_key=True)
     lab_adi = models.CharField(max_length=150)
     kapasite = models.IntegerField()
-    
     managers = models.ManyToManyField(
         User, 
         related_name='managed_labs',
-        blank=True 
+        blank=True
     )
+
+    operating_start_time = models.TimeField(null=True, blank=True)
+    operating_end_time = models.TimeField(null=True, blank=True)
+    # ------------------------------------
 
     def __str__(self):
         return self.lab_adi
@@ -29,8 +33,10 @@ class Computer(models.Model):
     bilgisayar_id = models.AutoField(primary_key=True)
     lab = models.ForeignKey(Laboratory, on_delete=models.CASCADE)
 
+    computer_name = models.CharField(max_length=100) 
+
     def __str__(self):
-        return f"Computer No: {self.bilgisayar_id} in {self.lab.lab_adi}"
+        return f"{self.computer_name} (ID: {self.bilgisayar_id}) in {self.lab.lab_adi}"
 
 # ---------------- Student Model ----------------
 class Student(models.Model):
