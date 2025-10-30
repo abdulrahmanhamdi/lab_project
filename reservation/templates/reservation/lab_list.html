@@ -1,28 +1,45 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Available Laboratories</title>
-</head>
-<body>
-    <a href="{% url 'logout' %}">Logout</a>
-    <a href="{% url 'my_reservations' %}">View My Reservations</a>
-    <hr>
+{% extends 'reservation/base.html' %}
+{% load static %}
 
-    <h1>Available Computer Laboratories</h1>
+{% block title %}Available Labs - Lab Reservation System{% endblock %}
 
-    <ul>
+
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="mb-0">Available Computer Laboratories</h1>
+    
+    <div>
+        <a href="{% url 'my_reservations' %}" class="btn btn-outline-primary">
+            View My Reservations
+        </a>
+        </div>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-header bg-dark text-white">
+        <h5 class="mb-0">Please select a lab:</h5>
+    </div>
+
+    <div class="list-group list-group-flush">
+        
         {% for lab in laboratories %}
-            <li>
-                <a href="{% url 'lab_detail' lab.lab_id %}">
-                    {{ lab.lab_adi }}
-                </a> 
-                - (Capacity: {{ lab.kapasite }})
-            </li>
+            <a href="{% url 'lab_detail' lab.lab_id %}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                
+                <strong class="fs-5">{{ lab.lab_adi }}</strong>
+                
+                <span class="badge bg-secondary rounded-pill">
+                    Capacity: {{ lab.kapasite }}
+                </span>
+            </a>
+        
         {% empty %}
-            <li>No laboratories are currently available.</li>
+            <li class="list-group-item">
+                <p class="text-muted mb-0">No laboratories are currently available.</p>
+            </li>
         {% endfor %}
-    </ul>
+        
+    </div>
+</div>
 
-</body>
-</html>
+{% endblock %}

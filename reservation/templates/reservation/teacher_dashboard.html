@@ -1,133 +1,152 @@
-<!DOCTYPE html>
-<html lang="en" dir="ltr">
-<head>
-    <meta charset="UTF-8">
-    <title>Teacher Dashboard</title>
-</head>
-<body>
-    <h1>Welcome, {{ user.first_name }}</h1>
-    <a href="{% url 'logout' %}">Logout</a>
-    <hr>
-    
-    <h2>Labs You Manage</h2>
+{% extends 'reservation/base.html' %}
+{% load static %}
+
+{% block title %}Teacher Dashboard - Lab System{% endblock %}
+
+
+{% block content %}
+
+<h1 class="mb-4">Welcome, {{ user.first_name|default:user.username }}</h1>
+
+<div class="card shadow-sm mb-4">
+    <div class="card-header bg-dark text-white">
+        <h2 class="h5 mb-0">Labs You Manage</h2>
+    </div>
     {% if labs %}
-        <ul>
+        <div class="list-group list-group-flush">
             {% for lab in labs %}
-                <li>
-                    <strong>
-                        <a href="{% url 'teacher_lab_detail' lab.lab_id %}">
-                            Manage Lab: {{ lab.lab_adi }}
-                        </a>
-                    </strong>
-                </li>
+                <a href="{% url 'teacher_lab_detail' lab.lab_id %}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                    <strong class="fs-5">Manage Lab: {{ lab.lab_adi }}</strong>
+                    <span class="badge bg-primary rounded-pill">Click to Manage</span>
+                </a>
             {% endfor %}
-        </ul>
+        </div>
     {% else %}
-        <p>You are not currently assigned to manage any labs.</p>
+        <div class="card-body">
+            <p class="text-muted mb-0">You are not currently assigned to manage any labs.</p>
+        </div>
     {% endif %}
-    
-    <hr>
+</div>
 
-    <h2 style="color:orange;">Pending Reservation Requests</h2>
-    {% if pending_reservations %}
-        <table border="1" style="width:100%; text-align: left;">
-            <thead>
-                <tr>
-                    <th>Student</th>
-                    <th>Lab</th>
-                    <th>Computer</th>
-                    <th>Date</th>
-                    <th>Time</th>
-                    <th>Action</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for res in pending_reservations %}
-                    <tr>
-                        <td>{{ res.ogrenci.user.username|default:"-- Teacher Reservation --" }}</td>
-                        <td>{{ res.bilgisayar.lab.lab_adi }}</td>
-                        <td>{{ res.bilgisayar.computer_name }}</td>
-                        <td>{{ res.tarih }}</td>
-                        <td>From {{ res.baslangic_saati }} to {{ res.bitis_saati }}</td>
-                        <td>
-                            <form method="post" style="display:inline;">
-                                {% csrf_token %}
-                                <input type="hidden" name="reservation_id" value="{{ res.rezervasyon_id }}">
-                                <button type="submit" name="approve_reservation" style="color:green;">Approve</button>
-                            </form>
-                            <form method="post" style="display:inline;">
-                                {% csrf_token %}
-                                <input type="hidden" name="reservation_id" value="{{ res.rezervasyon_id }}">
-                                <button type="submit" name="reject_reservation" style="color:red;">Reject</button>
-                            </form>
-                        </td>
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    {% else %}
-        <p>There are no pending reservation requests at the moment.</p>
-    {% endif %}
+<div class="card shadow-sm mb-4">
+    <div class="card-header bg-warning text-dark">
+        <h2 class="h5 mb-0">Pending Reservation Requests ({{ pending_reservations.count }})</h2>
+    </div>
+    <div class="card-body">
+        {% if pending_reservations %}
+            <div class="table-responsive">
+                <table class="table table-striped table-hover align-middle">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Student</th>
+                            <th>Lab</th>
+                            <th>Computer</th>
+                            <th>Date</th>
+                            <th>Time</th>
+                            <th class="text-center">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for res in pending_reservations %}
+                            <tr>
+                                <td>{{ res.ogrenci.user.username|default:"-- Teacher Reservation --" }}</td>
+                                <td>{{ res.bilgisayar.lab.lab_adi }}</td>
+                                <td>{{ res.bilgisayar.computer_name }}</td>
+                                <td>{{ res.tarih }}</td>
+                                <td>{{ res.baslangic_saati }} to {{ res.bitis_saati }}</td>
+                                <td class="text-center">
+                                    <form method="post" style="display:inline;">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="reservation_id" value="{{ res.rezervasyon_id }}">
+                                        <button type="submit" name="approve_reservation" class="btn btn-success btn-sm">Approve</button>
+                                    </form>
+                                    <form method="post" style="display:inline;">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="reservation_id" value="{{ res.rezervasyon_id }}">
+                                        <button type="submit" name="reject_reservation" class="btn btn-danger btn-sm">Reject</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <p class="text-muted text-center mb-0">There are no pending reservation requests at the moment.</p>
+        {% endif %}
+    </div>
+</div>
 
-    <hr>
+<div class="card shadow-sm mb-4">
+    <div class="card-header bg-success text-white">
+        <h2 class="h5 mb-0">Approved Reservations</h2>
+    </div>
+    <div class="card-body">
+        {% if approved_reservations %}
+            <div class="table-responsive">
+                <table class="table table-striped table-hover table-sm align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Student</th>
+                            <th>Lab</th>
+                            <th>Computer</th>
+                            <th>Date</th>
+                            <th>Time</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for res in approved_reservations %}
+                            <tr>
+                                <td>{{ res.ogrenci.user.username|default:"-- Teacher Reservation --" }}</td>
+                                <td>{{ res.bilgisayar.lab.lab_adi }}</td>
+                                <td>{{ res.bilgisayar.computer_name }}</td>
+                                <td>{{ res.tarih }}</td>
+                                <td>{{ res.baslangic_saati }} to {{ res.bitis_saati }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <p class="text-muted text-center mb-0">There are no approved reservations at the moment.</p>
+        {% endif %}
+    </div>
+</div>
 
-    <h2 style="color:green;">Approved Reservations</h2>
-    {% if approved_reservations %}
-        <table border="1" style="width:100%; text-align: left;">
-            <thead>
-                <tr>
-                    <th>Student</th>
-                    <th>Lab</th>
-                    <th>Computer</th>
-                    <th>Date</th>
-                    <th>Time</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for res in approved_reservations %}
-                    <tr style="background-color:#e0ffe0;">
-                        <td>{{ res.ogrenci.user.username|default:"-- Teacher Reservation --" }}</td>
-                        <td>{{ res.bilgisayar.lab.lab_adi }}</td>
-                        <td>{{ res.bilgisayar.computer_name }}</td>
-                        <td>{{ res.tarih }}</td>
-                        <td>From {{ res.baslangic_saati }} to {{ res.bitis_saati }}</td>
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    {% else %}
-        <p>There are no approved reservations at the moment.</p>
-    {% endif %}
+<div class="card shadow-sm mb-4">
+    <div class="card-header bg-danger text-white">
+        <h2 class="h5 mb-0">Rejected Reservation Log</h2>
+    </div>
+    <div class="card-body">
+        {% if rejected_reservations %}
+            <div class="table-responsive">
+                <table class="table table-striped table-hover table-sm align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Student</th>
+                            <th>Lab</th>
+                            <th>Computer</th>
+                            <th>Date</th>
+                            <th>Time</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for res in rejected_reservations %}
+                            <tr>
+                                <td>{{ res.ogrenci.user.username|default:"-- Teacher Reservation --" }}</td>
+                                <td>{{ res.bilgisayar.lab.lab_adi }}</td>
+                                <td>{{ res.bilgisayar.computer_name }}</td>
+                                <td>{{ res.tarih }}</td>
+                                <td>{{ res.baslangic_saati }} to {{ res.bitis_saati }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <p class="text-muted text-center mb-0">There are no rejected reservations in the log.</p>
+        {% endif %}
+    </div>
+</div>
 
-    <hr>
-
-    <h2 style="color:red;">Rejected Reservation Log</h2>
-    {% if rejected_reservations %}
-        <table border="1" style="width:100%; text-align: left;">
-            <thead>
-                <tr>
-                    <th>Student</th>
-                    <th>Lab</th>
-                    <th>Computer</th>
-                    <th>Date</th>
-                    <th>Time</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for res in rejected_reservations %}
-                    <tr style="background-color:#ffe0e0;">
-                        <td>{{ res.ogrenci.user.username|default:"-- Teacher Reservation --" }}</td>
-                        <td>{{ res.bilgisayar.lab.lab_adi }}</td>
-                        <td>{{ res.bilgisayar.computer_name }}</td>
-                        <td>{{ res.tarih }}</td>
-                        <td>From {{ res.baslangic_saati }} to {{ res.bitis_saati }}</td>
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    {% else %}
-        <p>There are no rejected reservations in the log.</p>
-    {% endif %}
-
-</body>
-</html>
+{% endblock %}

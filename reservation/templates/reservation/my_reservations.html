@@ -1,31 +1,70 @@
-<!DOCTYPE html>
-<html lang="en" dir="ltr">
-<head>
-    <meta charset="UTF-8">
-    <title>My Reservations</title>
-</head>
-<body>
-    <a href="{% url 'logout' %}">Logout</a>
-    <h1>My Reservations List</h1>
+{% extends 'reservation/base.html' %}
+{% load static %}
 
-    {% if reservations %}
-        <ul>
-            {% for res in reservations %}
-                <li>
-                    <strong>Lab:</strong> {{ res.bilgisayar.lab.lab_adi }} | 
-                    <strong>Computer ID:</strong> {{ res.bilgisayar.bilgisayar_id }} | 
+{% block title %}My Reservations - Lab System{% endblock %}
+
+
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="mb-0">My Reservations List</h1>
+    <a href="{% url 'lab_list' %}" class="btn btn-primary">
+        Back to Home Page (Lab List)
+    </a>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-header bg-dark text-white">
+        <h5 class="mb-0">Your Reservation History</h5>
+    </div>
+
+    <div class="list-group list-group-flush">
+        
+        {% for res in reservations %}
+            {%
+                if res.durum == 'Onaylandı' %}
+                <li class="list-group-item list-group-item-success">
+            {% elif res.durum == 'Reddedildi' %}
+                <li class="list-group-item list-group-item-danger">
+            {% elif res.durum == 'Beklemede' %}
+                <li class="list-group-item list-group-item-warning">
+            {% else %}
+                <li class="list-group-item">
+            {% endif %}
+            
+                <div class="d-flex w-100 justify-content-between">
+                    <h5 class="mb-1">
+                        Lab: {{ res.bilgisayar.lab.lab_adi }}
+                        <span class="text-muted h6">(Computer: {{ res.bilgisayar.computer_name|default:res.bilgisayar.bilgisayar_id }})</span>
+                    </h5>
+                    {% if res.durum == 'Onaylandı' %}
+                        <span class="badge bg-success rounded-pill align-self-center">Approved</span>
+                    {% elif res.durum == 'Reddedildi' %}
+                        <span class="badge bg-danger rounded-pill align-self-center">Rejected</span>
+                    {% elif res.durum == 'Beklemede' %}
+                        <span class="badge bg-warning text-dark rounded-pill align-self-center">Pending</span>
+                    {% else %}
+                        <span class="badge bg-secondary rounded-pill align-self-center">{{ res.get_durum_display|default:res.durum }}</span>
+                    {% endif %}
+                </div>
+                
+                <p class="mb-1">
                     <strong>Date:</strong> {{ res.tarih }} | 
-                    <strong>From:</strong> {{ res.baslangic_saati }} <strong>To:</strong> {{ res.bitis_saati }} |
-                    <strong>Status:</strong> {{ res.durum }}
-                </li>
-            {% endfor %}
-        </ul>
-    {% else %}
-        <p>You don’t have any reservations yet.</p>
-    {% endif %}
-    
-    <br>
-    <a href="{% url 'lab_list' %}">Back to Home Page</a>
+                    <strong>From:</strong> {{ res.baslangic_saati }} | 
+                    <strong>To:</strong> {{ res.bitis_saati }}
+                </p>
+                
+            </li>
+        
+        {% empty %}
+            <li class="list-group-item">
+                <p class="text-muted text-center mb-0 p-3">
+                    You don’t have any reservations yet.
+                </p>
+            </li>
+        {% endfor %}
+        
+    </div>
+</div>
 
-</body>
-</html>
+{% endblock %}
