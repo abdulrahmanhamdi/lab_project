@@ -10,7 +10,6 @@ class Teacher(models.Model):
         return f"{self.user.first_name} {self.user.last_name}"
 
 # ---------------- Laboratory Model ----------------
-# في reservation/models.py
 class Laboratory(models.Model):
     lab_id = models.AutoField(primary_key=True)
     lab_adi = models.CharField(max_length=150)
@@ -56,7 +55,7 @@ class Reservation(models.Model):
     ]
 
     rezervasyon_id = models.AutoField(primary_key=True)
-    ogrenci = models.ForeignKey(Student, on_delete=models.CASCADE, null=True, blank=True)
+    ogrenci = models.ForeignKey(Student, on_delete=models.CASCADE)
     bilgisayar = models.ForeignKey(Computer, on_delete=models.CASCADE)
     tarih = models.DateField()
     baslangic_saati = models.TimeField()

@@ -1,321 +1,224 @@
-{% extends 'reservation/base.html' %}
-{% load static %}
-{% load widget_tweaks %}
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Dashboard</title>
+</head>
+<body>
+    <h1>Admin Dashboard</h1>
+    <p>Welcome, {{ request.user.username }}</p>
+    <a href="{% url 'logout' %}">Logout</a>
+    <hr>
 
-{% block title %}Admin Dashboard - Lab System{% endblock %}
+    <h2>Create New Student</h2>
+    <form method="post">
+        {% csrf_token %}
+        {{ student_form.as_p }}
+        <button type="submit" name="create_student">Create Student</button>
+    </form>
 
-{% block content %}
+    <hr>
 
-<h1 class="mb-4">Admin Dashboard</h1>
-<p class="fs-5 text-muted">Welcome, {{ request.user.username }}</p>
+    <h2>Create New Teacher</h2>
+    <form method="post">
+        {% csrf_token %}
+        {{ teacher_form.as_p }}
+        <button type="submit" name="create_teacher">Create Teacher</button>
+    </form>
 
-<div class="row">
+    <hr>
 
-    <div class="col-lg-4">
-        <h2 class="h4">Creation Panel</h2>
+    <h2>Create New Laboratory</h2>
+    <form method="post">
+        {% csrf_token %}
+        {{ lab_form.as_p }}
+        <button type="submit" name="create_lab">Create Laboratory</button>
+    </form>
 
-        <div class="accordion shadow-sm" id="creationAccordion">
+    <hr>
 
-            <!-- Create Student -->
-            <div class="accordion-item">
-                <h2 class="accordion-header" id="headingStudent">
-                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
-                            data-bs-target="#collapseStudent" aria-expanded="false" aria-controls="collapseStudent">
-                        <strong>Create New Student</strong>
-                    </button>
-                </h2>
-                <div id="collapseStudent" class="accordion-collapse collapse"
-                     aria-labelledby="headingStudent" data-bs-parent="#creationAccordion">
-                    <div class="accordion-body">
-                        <form method="post">
+    <h2>Registered Students List</h2>
+    {% if students %}
+        <table border="1" style="width:100%;">
+            <thead>
+                <tr>
+                    <th>Username</th>
+                    <th>Full Name</th>
+                    <th>Email (Key)</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for student in students %}
+                <tr>
+                    <td>{{ student.user.username }}</td>
+                    <td>{{ student.user.first_name }} {{ student.user.last_name }}</td>
+                    <td>{{ student.ogrenci_email }}</td>
+                    <td>
+                        <form method="post" style="display:inline;">
                             {% csrf_token %}
-                            {% for field in student_form %}
-                                <div class="mb-3">
-                                    <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}:</label>
-                                    {{ field|add_class:"form-control" }}
-                                    {% if field.errors %}
-                                        <div class="invalid-feedback d-block">{{ field.errors.0 }}</div>
-                                    {% endif %}
-                                </div>
-                            {% endfor %}
-                            <button type="submit" name="create_student" class="btn btn-primary w-100">
-                                Create Student
+                            <input type="hidden" name="user_id" value="{{ student.user.id }}">
+                            <button type="submit" name="delete_student" style="color:red;"
+                                    onclick="return confirm('Are you sure you want to delete this student?');">
+                                Delete Student
                             </button>
                         </form>
-                    </div>
-                </div>
-            </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>No students registered yet.</p>
+    {% endif %}
 
-            <!-- Create Teacher -->
-            <div class="accordion-item">
-                <h2 class="accordion-header" id="headingTeacher">
-                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
-                            data-bs-target="#collapseTeacher" aria-expanded="false" aria-controls="collapseTeacher">
-                        <strong>Create New Teacher</strong>
-                    </button>
-                </h2>
-                <div id="collapseTeacher" class="accordion-collapse collapse"
-                     aria-labelledby="headingTeacher" data-bs-parent="#creationAccordion">
-                    <div class="accordion-body">
-                        <form method="post">
+    <hr>
+
+    <h2>Registered Teachers List</h2>
+    {% if teachers %}
+        <table border="1" style="width:100%;">
+            <thead>
+                <tr>
+                    <th>Username</th>
+                    <th>Full Name</th>
+                    <th>Employee Number (Key)</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for teacher in teachers %}
+                <tr>
+                    <td>{{ teacher.user.username }}</td>
+                    <td>{{ teacher.user.first_name }} {{ teacher.user.last_name }}</td>
+                    <td>{{ teacher.ogretmen_no }}</td>
+                    <td>
+                        <form method="post" style="display:inline;">
                             {% csrf_token %}
-                            {% for field in teacher_form %}
-                                <div class="mb-3">
-                                    <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}:</label>
-                                    {{ field|add_class:"form-control" }}
-                                    {% if field.errors %}
-                                        <div class="invalid-feedback d-block">{{ field.errors.0 }}</div>
-                                    {% endif %}
-                                </div>
-                            {% endfor %}
-                            <button type="submit" name="create_teacher" class="btn btn-primary w-100">
-                                Create Teacher
+                            <input type="hidden" name="user_id" value="{{ teacher.user.id }}">
+                            <button type="submit" name="delete_teacher" style="color:red;"
+                                    onclick="return confirm('Are you sure you want to delete this teacher?');">
+                                Delete Teacher
                             </button>
                         </form>
-                    </div>
-                </div>
-            </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>No teachers registered yet.</p>
+    {% endif %}
 
-            <!-- Create Laboratory -->
-            <div class="accordion-item">
-                <h2 class="accordion-header" id="headingLab">
-                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
-                            data-bs-target="#collapseLab" aria-expanded="false" aria-controls="collapseLab">
-                        <strong>Create New Laboratory</strong>
-                    </button>
-                </h2>
-                <div id="collapseLab" class="accordion-collapse collapse"
-                     aria-labelledby="headingLab" data-bs-parent="#creationAccordion">
-                    <div class="accordion-body">
-                        <form method="post">
-                            {% csrf_token %}
-                            {% for field in lab_form %}
-                                <div class="mb-3">
-                                    <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}:</label>
-                                    {{ field|add_class:"form-control" }}
-                                    {% if field.errors %}
-                                        <div class="invalid-feedback d-block">{{ field.errors.0 }}</div>
-                                    {% endif %}
-                                </div>
+    <hr>
+
+    <h2>Laboratories List</h2>
+    {% if labs %}
+        <table border="1" style="width:100%;">
+            <thead>
+                <tr>
+                    <th>Laboratory Name</th>
+                    <th>Capacity</th>
+                    <th>Managers</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for lab in labs %}
+                <tr>
+                    <td>
+                        <a href="{% url 'admin_lab_detail' lab.lab_id %}">
+                            {{ lab.lab_adi }}
+                        </a>
+                    </td>
+                    <td>{{ lab.kapasite }}</td>
+                    <td>
+                        <ul>
+                            {% for manager in lab.managers.all %}
+                                <li>{{ manager.username }} ({{ manager.first_name }})</li>
+                            {% empty %}
+                                <li style="color:red;">-- No manager assigned --</li>
                             {% endfor %}
-                            <button type="submit" name="create_lab" class="btn btn-primary w-100">
-                                Create Laboratory
+                        </ul>
+                    </td>
+                    <td>
+                        <form method="post" style="display:inline;">
+                            {% csrf_token %}
+                            <input type="hidden" name="lab_id" value="{{ lab.lab_id }}">
+                            <button type="submit" name="delete_lab" style="color:red;"
+                                    onclick="return confirm('Warning! This will delete the lab and all related computers and reservations. Are you sure?');">
+                                Delete Laboratory
                             </button>
                         </form>
-                    </div>
-                </div>
-            </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>No laboratories registered yet.</p>
+    {% endif %}
 
-        </div>
-    </div>
+    <hr>
 
-    <!-- Students Table -->
-    <div class="col-lg-8">
-
-        <div class="card shadow-sm mb-4">
-            <div class="card-header">
-                <h2 class="h5 mb-0">Registered Students List ({{ students.count }})</h2>
-            </div>
-            <div class="card-body p-0">
-                {% if students %}
-                    <div class="table-responsive">
-                        <table class="table table-striped table-hover mb-0 align-middle">
-                            <thead class="table-dark">
-                                <tr>
-                                    <th>Username</th>
-                                    <th>Full Name</th>
-                                    <th>Email</th>
-                                    <th>Action</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for student in students %}
-                                    <tr>
-                                        <td>{{ student.user.username }}</td>
-                                        <td>{{ student.user.first_name }} {{ student.user.last_name }}</td>
-                                        <td>{{ student.ogrenci_email }}</td>
-                                        <td>
-                                            <form method="post" style="display:inline;">
-                                                {% csrf_token %}
-                                                <input type="hidden" name="user_id" value="{{ student.user.id }}">
-                                                <button type="submit" name="delete_student"
-                                                        class="btn btn-danger btn-sm"
-                                                        onclick="return confirm('Are you sure you want to delete this student?');">
-                                                    Delete
-                                                </button>
-                                            </form>
-                                        </td>
-                                    </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                {% else %}
-                    <p class="text-muted text-center p-3 mb-0">No students registered yet.</p>
-                {% endif %}
-            </div>
-        </div>
-
-        <!-- Teachers Table -->
-        <div class="card shadow-sm mb-4">
-            <div class="card-header">
-                <h2 class="h5 mb-0">Registered Teachers List ({{ teachers.count }})</h2>
-            </div>
-            <div class="card-body p-0">
-                {% if teachers %}
-                    <div class="table-responsive">
-                        <table class="table table-striped table-hover mb-0 align-middle">
-                            <thead class="table-dark">
-                                <tr>
-                                    <th>Username</th>
-                                    <th>Full Name</th>
-                                    <th>Employee No.</th>
-                                    <th>Action</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for teacher in teachers %}
-                                    <tr>
-                                        <td>{{ teacher.user.username }}</td>
-                                        <td>{{ teacher.user.first_name }} {{ teacher.user.last_name }}</td>
-                                        <td>{{ teacher.ogretmen_no }}</td>
-                                        <td>
-                                            <form method="post" style="display:inline;">
-                                                {% csrf_token %}
-                                                <input type="hidden" name="user_id" value="{{ teacher.user.id }}">
-                                                <button type="submit" name="delete_teacher"
-                                                        class="btn btn-danger btn-sm"
-                                                        onclick="return confirm('Are you sure you want to delete this teacher?');">
-                                                    Delete
-                                                </button>
-                                            </form>
-                                        </td>
-                                    </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                {% else %}
-                    <p class="text-muted text-center p-3 mb-0">No teachers registered yet.</p>
-                {% endif %}
-            </div>
-        </div>
-
-        <!-- Labs Table -->
-        <div class="card shadow-sm mb-4">
-            <div class="card-header">
-                <h2 class="h5 mb-0">Laboratories List ({{ labs.count }})</h2>
-            </div>
-            <div class="card-body p-0">
-                {% if labs %}
-                    <div class="table-responsive">
-                        <table class="table table-striped table-hover mb-0 align-middle">
-                            <thead class="table-dark">
-                                <tr>
-                                    <th>Laboratory Name</th>
-                                    <th>Capacity</th>
-                                    <th>Managers</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for lab in labs %}
-                                    <tr>
-                                        <td>
-                                            <a href="{% url 'admin_lab_detail' lab.lab_id %}">
-                                                <strong>{{ lab.lab_adi }}</strong>
-                                            </a>
-                                        </td>
-                                        <td>{{ lab.kapasite }}</td>
-                                        <td>
-                                            <ul class="list-unstyled mb-0">
-                                                {% for manager in lab.managers.all %}
-                                                    <li>{{ manager.username }}</li>
-                                                {% empty %}
-                                                    <li class="text-danger">-- No manager assigned --</li>
-                                                {% endfor %}
-                                            </ul>
-                                        </td>
-                                    </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                {% else %}
-                    <p class="text-muted text-center p-3 mb-0">No laboratories registered yet.</p>
-                {% endif %}
-            </div>
-        </div>
-
-        <!-- Reservations Management -->
-        <div class="card shadow-sm mb-4">
-            <div class="card-header">
-                <h2 class="h5 mb-0">Manage All Reservations in the System</h2>
-            </div>
-            <div class="card-body p-0">
-                {% if reservations %}
-                    <div class="table-responsive">
-                        <table class="table table-striped table-hover mb-0 align-middle" style="font-size: 0.9rem;">
-                            <thead class="table-dark">
-                                <tr>
-                                    <th>Student</th>
-                                    <th>Lab</th>
-                                    <th>Computer</th>
-                                    <th>Date</th>
-                                    <th>Time</th>
-                                    <th>Status</th>
-                                    <th>Action</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for res in reservations %}
-                                    <tr>
-                                        <td>{{ res.ogrenci.user.username|default:"-- Teacher --" }}</td>
-                                        <td>{{ res.bilgisayar.lab.lab_adi }}</td>
-                                        <td>{{ res.bilgisayar.computer_name }}</td>
-                                        <td>{{ res.tarih }}</td>
-                                        <td>{{ res.baslangic_saati }} to {{ res.bitis_saati }}</td>
-                                        <td>
-                                            {% if res.durum == 'Onaylandı' %}
-                                                <span class="badge bg-success">Approved</span>
-                                            {% elif res.durum == 'Reddedildi' %}
-                                                <span class="badge bg-danger">Rejected</span>
-                                            {% else %}
-                                                <span class="badge bg-warning text-dark">Pending</span>
-                                            {% endif %}
-                                        </td>
-                                        <td class="text-nowrap">
-                                            {% if res.durum == 'Beklemede' %}
-                                                <form method="post" style="display:inline;">
-                                                    {% csrf_token %}
-                                                    <input type="hidden" name="reservation_id" value="{{ res.rezervasyon_id }}">
-                                                    <button type="submit" name="approve_reservation_admin" class="btn btn-success btn-sm">A</button>
-                                                </form>
-                                                <form method="post" style="display:inline;">
-                                                    {% csrf_token %}
-                                                    <input type="hidden" name="reservation_id" value="{{ res.rezervasyon_id }}">
-                                                    <button type="submit" name="reject_reservation_admin" class="btn btn-warning btn-sm">R</button>
-                                                </form>
-                                            {% endif %}
-                                            <form method="post" style="display:inline;">
-                                                {% csrf_token %}
-                                                <input type="hidden" name="reservation_id" value="{{ res.rezervasyon_id }}">
-                                                <button type="submit" name="delete_reservation" class="btn btn-danger btn-sm"
-                                                        onclick="return confirm('Are you sure you want to permanently delete this reservation?');">
-                                                    X
-                                                </button>
-                                            </form>
-                                        </td>
-                                    </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                {% else %}
-                    <p class="text-muted text-center p-3 mb-0">There are no reservations in the system yet.</p>
-                {% endif %}
-            </div>
-        </div>
-    </div>
-</div>
-
-{% endblock %}
+    <h2>Manage All Reservations in the System</h2>
+    {% if reservations %}
+        <table border="1" style="width:100%;">
+            <thead>
+                <tr>
+                    <th>Student</th>
+                    <th>Lab</th>
+                    <th>Computer</th>
+                    <th>Date</th>
+                    <th>Time</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for res in reservations %}
+                <tr>
+                    <td>{{ res.ogrenci.user.username|default:"-- Teacher Reservation --" }}</td>
+                    <td>{{ res.bilgisayar.lab.lab_adi }}</td>
+                    <td>{{ res.bilgisayar.computer_name }}</td>
+                    <td>{{ res.tarih }}</td>
+                    <td>From {{ res.baslangic_saati }} to {{ res.bitis_saati }}</td>
+                    <td>
+                        {% if res.durum == 'Onaylandı' %}
+                            <span style="color:green;">{{ res.get_durum_display }}</span>
+                        {% elif res.durum == 'Reddedildi' %}
+                            <span style="color:red;">{{ res.get_durum_display }}</span>
+                        {% else %}
+                            <span style="color:orange;">{{ res.get_durum_display }}</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if res.durum == 'Beklemede' %}
+                            <form method="post" style="display:inline;">
+                                {% csrf_token %}
+                                <input type="hidden" name="reservation_id" value="{{ res.rezervasyon_id }}">
+                                <button type="submit" name="approve_reservation_admin" style="color:green;">Approve</button>
+                            </form>
+                            <form method="post" style="display:inline;">
+                                {% csrf_token %}
+                                <input type="hidden" name="reservation_id" value="{{ res.rezervasyon_id }}">
+                                <button type="submit" name="reject_reservation_admin" style="color:red;">Reject</button>
+                            </form>
+                        {% endif %}
+                        <form method="post" style="display:inline;">
+                            {% csrf_token %}
+                            <input type="hidden" name="reservation_id" value="{{ res.rezervasyon_id }}">
+                            <button type="submit" name="delete_reservation" style="color:darkred; border-color:darkred;"
+                                    onclick="return confirm('Are you sure you want to permanently delete this reservation?');">
+                                Cancel (Permanent Delete)
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>There are no reservations in the system yet.</p>
+    {% endif %}
+</body>
+</html>

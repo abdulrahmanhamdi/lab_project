@@ -100,26 +100,3 @@ class LabEditForm(forms.ModelForm):
             'operating_start_time': forms.TimeInput(attrs={'type': 'time'}),
             'operating_end_time': forms.TimeInput(attrs={'type': 'time'}),
         }
-
-class TeacherReservationForm(forms.ModelForm):
-    class Meta:
-        model = Reservation
-        fields = ['bilgisayar', 'tarih', 'baslangic_saati', 'bitis_saati']
-        widgets = {
-            'tarih': forms.DateInput(attrs={'type': 'date'}),
-            'baslangic_saati': forms.TimeInput(attrs={'type': 'time'}),
-            'bitis_saati': forms.TimeInput(attrs={'type': 'time'}),
-        }
-        labels = {
-            'bilgisayar': 'Select Computer',
-            'tarih': 'Date',
-            'baslangic_saati': 'Start Time',
-            'bitis_saati': 'End Time',
-        }
-
-    def __init__(self, *args, **kwargs):
-        lab = kwargs.pop('lab', None)
-        super().__init__(*args, **kwargs)
-
-        if lab:
-            self.fields['bilgisayar'].queryset = Computer.objects.filter(lab=lab)

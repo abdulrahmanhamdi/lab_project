@@ -1,67 +1,44 @@
-{% extends 'reservation/base.html' %}
-{% load static %}
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <title>Laboratory Details {{ laboratory.lab_adi }}</title>
+</head>
+<body>
+    <h1>{{ laboratory.lab_adi }}</h1>
 
-{% block title %}{{ laboratory.lab_adi }} Details - Lab System{% endblock %}
+    <p><strong>Laboratory Managers:</strong></p>
+    <ul>
+        {% for manager in laboratory.managers.all %}
+            <li>{{ manager.first_name }} {{ manager.last_name }}</li>
+        {% empty %}
+            <li>-- No manager assigned --</li>
+        {% endfor %}
+    </ul>
 
+    <hr>
 
-{% block content %}
+    <h3>Computers in the Laboratory:</h3>
+    <ul>
+        {% for pc in computers %}
+            <li>
+                Computer ID: {{ pc.bilgisayar_id }} - 
 
-<div class="card shadow-sm mb-4">
-    
-    <div class="card-header bg-dark text-white">
-        <h1 class="card-title h3 mb-0">{{ laboratory.lab_adi }}</h1>
-    </div>
-    
-    <div class="card-body">
-        
-        <h5 class="card-subtitle mb-2">Laboratory Managers:</h5>
-        <ul class="list-unstyled ms-3">
-            {% for manager in laboratory.managers.all %}
-                <li>{{ manager.first_name }} {{ manager.last_name }}</li>
-            {% empty %}
-                <li class="text-muted">-- No manager assigned --</li>
-            {% endfor %}
-        </ul>
-        
-        <hr>
+                {% if pc.bilgisayar_id in booked_computer_ids %}
+                    <strong><span style="color:green;">Booked (Approved)</span></strong>
+                {% else %}
+                    <a href="{% url 'create_reservation' pc.bilgisayar_id %}">Book Now</a>
+                {% endif %}
+            </li>
+        {% empty %}
+            <li>No computers have been added to this laboratory.</li>
+        {% endfor %}
+    </ul>
 
-        <h3 class="h4">Computers in this Lab:</h3>
-        
-        <div class="list-group">
-            {% for pc in computers %}
-                <div class="list-group-item d-flex justify-content-between align-items-center">
-                    
-                    <span class="fs-5">
-                        Computer ID: {{ pc.bilgisayar_id }}
-                    </span>
-                    
-                    <div>
-                        {% if pc.bilgisayar_id in booked_computer_ids %}
-                            <span class="text-success fw-bold">
-                                Booked (Approved)
-                            </span>
-                        {% else %}
-                            <a href="{% url 'create_reservation' pc.bilgisayar_id %}" class="btn btn-success btn-sm">
-                                Book Now
-                            </a>
-                        {% endif %}
-                    </div>
-                </div>
-            {% empty %}
-                <li class="list-group-item">
-                    <p class="text-muted mb-0">No computers have been added to this laboratory.</p>
-                </li>
-            {% endfor %}
-        </div>
-        
-    </div>
-</div>
+    <br>
+    <a href="{% url 'lab_list' %}">Back to Laboratory List</a>
+    <br>
+    <a href="{% url 'my_reservations' %}">View My Reservations</a>
 
-<a href="{% url 'lab_list' %}" class="btn btn-outline-secondary">
-    &laquo; Back to Laboratory List
-</a>
-<a href="{% url 'my_reservations' %}" class="btn btn-outline-primary ms-2">
-    View My Reservations
-</a>
-
-{% endblock %}
+</body>
+</html>
