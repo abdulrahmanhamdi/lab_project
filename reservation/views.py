@@ -252,44 +252,51 @@ def create_reservation(request, computer_id):
     if request.method == 'POST':
         form = ReservationForm(request.POST)
         if form.is_valid():
-            date = form.cleaned_data['tarih']
-            start_time = form.cleaned_data['baslangic_saati']
-            end_time = form.cleaned_data['bitis_saati']
+            tarih = form.cleaned_data['tarih']
+            baslangic_saati = form.cleaned_data['baslangic_saati']
+            bitis_saati = form.cleaned_data['bitis_saati']
+
+            pending_or_approved = ['Onaylandı', 'Beklemede']
 
             time_overlap = Reservation.objects.filter(
                 bilgisayar=computer,
-                tarih=date,
-                durum='Onaylandı'
+                tarih=tarih,
+                durum__in=pending_or_approved
             ).filter(
-                Q(baslangic_saati__lt=end_time, bitis_saati__gt=start_time)
+                Q(baslangic_saati__lt=bitis_saati, bitis_saati__gt=baslangic_saati)
             ).exists()
 
             if time_overlap:
-                messages.error(request, 'Error: This computer is already booked at this time.')
-                return redirect('create_reservation', computer_id=computer.bilgisayar_id)
-
-            try:
-                start_time_obj = datetime.strptime(str(start_time), '%H:%M:%S')
-                end_time_obj = datetime.strptime(str(end_time), '%H:%M:%S')
-                duration_new_reservation = (end_time_obj - start_time_obj).total_seconds() / 60
-            except ValueError:
-                messages.error(request, 'Error: Invalid time input.')
+                messages.error(request, 'Bu bilgisayar belirtilen saatte zaten rezerve edilmiştir.')
                 return redirect('create_reservation', computer_id=computer.bilgisayar_id)
 
             student_reservations_today = Reservation.objects.filter(
                 ogrenci=student,
-                tarih=date,
-                durum='Onaylandı',
-                bilgisayar__lab=computer.lab
+                tarih=tarih,
+                durum__in=pending_or_approved
             )
+
+            try:
+                start_time_obj = datetime.strptime(str(baslangic_saati), '%H:%M:%S')
+                end_time_obj = datetime.strptime(str(bitis_saati), '%H:%M:%S')
+                duration_new_reservation = (end_time_obj - start_time_obj).total_seconds() / 60
+
+                if duration_new_reservation <= 0:
+                    messages.error(request, 'Bitiş saati başlangıç saatinden sonra olmalıdır.')
+                    return redirect('create_reservation', computer_id=computer.bilgisayar_id)
+
+            except ValueError:
+                messages.error(request, 'Saat formatı hatalı.')
+                return redirect('create_reservation', computer_id=computer.bilgisayar_id)
 
             total_duration_minutes = 0
             for res in student_reservations_today:
-                duration = (datetime.combine(date, res.bitis_saati) - datetime.combine(date, res.baslangic_saati)).total_seconds() / 60
+                duration = (datetime.combine(tarih, res.bitis_saati) - 
+                            datetime.combine(tarih, res.baslangic_saati)).total_seconds() / 60
                 total_duration_minutes += duration
 
             if (total_duration_minutes + duration_new_reservation) > 120:
-                messages.error(request, 'Error: You have exceeded the daily limit of 2 hours per lab.')
+                messages.error(request, 'Günlük maksimum 2 saat rezervasyon hakkınızı aştınız.')
                 return redirect('create_reservation', computer_id=computer.bilgisayar_id)
 
             other_lab_reservation = student_reservations_today.exclude(
@@ -297,13 +304,13 @@ def create_reservation(request, computer_id):
             ).exists()
 
             if other_lab_reservation:
-                messages.error(request, 'Error: You cannot book in more than one lab on the same day.')
+                messages.error(request, 'Bir gün içinde yalnızca bir laboratuvarda rezervasyon yapabilirsiniz.')
                 return redirect('create_reservation', computer_id=computer.bilgisayar_id)
 
             lab = computer.lab
             if lab.operating_start_time and lab.operating_end_time:
-                if (start_time < lab.operating_start_time) or (end_time > lab.operating_end_time):
-                    messages.error(request, f'Error: Reservation must be within lab working hours ({lab.operating_start_time} - {lab.operating_end_time}).')
+                if (baslangic_saati < lab.operating_start_time) or (bitis_saati > lab.operating_end_time):
+                    messages.error(request, f'Rezervasyon saatleri laboratuvar çalışma saatleri ({lab.operating_start_time} - {lab.operating_end_time}) dışında olamaz.')
                     return redirect('create_reservation', computer_id=computer.bilgisayar_id)
 
             reservation = form.save(commit=False)
@@ -311,7 +318,7 @@ def create_reservation(request, computer_id):
             reservation.ogrenci = student
             reservation.save()
 
-            messages.success(request, 'Reservation request submitted successfully.')
+            messages.success(request, 'Rezervasyon talebiniz gönderildi ve onay bekliyor.')
             return redirect('my_reservations')
 
     else:
