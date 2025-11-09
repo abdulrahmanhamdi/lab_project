@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <title>Login Portal</title>
+</head>
+<body>
+    <h1>Login Portal</h1>
+    <p>Please select your role:</p>
+    
+    <div style="margin-top: 20px;">
+        <a href="{% url 'login_student' %}" style="padding: 15px; background-color: #007bff; color: white; text-decoration: none;">
+            I am a Student
+        </a>
+    </div>
+    
+    <div style="margin-top: 20px;">
+        <a href="{% url 'login_teacher' %}" style="padding: 15px; background-color: #28a745; color: white; text-decoration: none;">
+            I am a Teacher / Assistant
+        </a>
+    </div>
+    
+    <div style="margin-top: 20px;">
+        <a href="{% url 'login_admin' %}" style="padding: 15px; background-color: #dc3545; color: white; text-decoration: none;">
+            I am a System Administrator (Admin)
+        </a>
+    </div>
+</body>
+</html>

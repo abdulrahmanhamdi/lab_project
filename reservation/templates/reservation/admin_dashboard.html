@@ -7,7 +7,8 @@
 <body>
     <h1>Admin Dashboard</h1>
     <p>Welcome, {{ request.user.username }}</p>
-    <a href="{% url 'logout' %}">Logout</a>
+    <a href="{% url 'logout' %}">Logout</a> | 
+    <a href="{% url 'change_password' %}">Change Password</a>
     <hr>
 
     <h2>Create New Student</h2>
@@ -63,6 +64,11 @@
                                 Delete Student
                             </button>
                         </form>
+
+                        <a href="{% url 'admin_reset_password' student.user.id %}" 
+                           style="background-color:orange; color:white; padding: 5px; text-decoration: none; margin-left: 5px;">
+                            Reset Password
+                        </a>
                     </td>
                 </tr>
                 {% endfor %}
@@ -100,6 +106,11 @@
                                 Delete Teacher
                             </button>
                         </form>
+
+                        <a href="{% url 'admin_reset_password' teacher.user.id %}" 
+                           style="background-color:orange; color:white; padding: 5px; text-decoration: none; margin-left: 5px;">
+                            Reset Password
+                        </a>
                     </td>
                 </tr>
                 {% endfor %}

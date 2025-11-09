@@ -9,38 +9,132 @@ from django.db.models import Q, Sum
 from datetime import datetime, timedelta
 from django.contrib import messages
 from django.contrib.auth.models import User
+from django.contrib.auth.forms import PasswordChangeForm
+from django.contrib.auth import update_session_auth_hash
+from django.contrib.auth.forms import SetPasswordForm
+
 
 # ------------------- 1. Authentication & Role Routing -------------------
 
-def login_view(request):
+@login_required
+def change_password_view(request):
+    if request.method == 'POST':
+        # 1. Use the built-in form and pass the current user
+        form = PasswordChangeForm(request.user, request.POST)
+        if form.is_valid():
+            user = form.save()  # 2. Automatically saves with proper hashing
+
+            # 3. (Very important) Update the session with the new password
+            update_session_auth_hash(request, user)
+
+            messages.success(request, 'Password changed successfully!')
+            return redirect('change_password')  # Reload the same page
+        else:
+            messages.error(request, 'Please correct the errors below.')
+    else:
+        form = PasswordChangeForm(request.user)
+
+    return render(request, 'reservation/change_password.html', {
+        'form': form
+    })
+#------------------- Admin Reset Password View -------------------
+@login_required
+def admin_reset_password_view(request, user_id):
+    # 1. Ensure that the current user is an admin
+    if not request.user.is_superuser:
+        return redirect('login')
+
+    # 2. Get the target user (whose password will be reset)
+    user_to_reset = get_object_or_404(User, pk=user_id)
+
+    if request.method == 'POST':
+        # 3. Use the built-in SetPasswordForm
+        form = SetPasswordForm(user_to_reset, request.POST)
+        if form.is_valid():
+            form.save()  # 4. Automatically saves with proper password hashing
+            messages.success(request, f'Password for user {user_to_reset.username} has been successfully changed.')
+            return redirect('admin_dashboard')  # Redirect back to admin dashboard
+        else:
+            messages.error(request, 'Please correct the errors below.')
+    else:
+        form = SetPasswordForm(user_to_reset)
+
+    return render(request, 'reservation/admin_reset_password.html', {
+        'form': form,
+        'user_to_reset': user_to_reset
+    })
+#------------------- Login Views -------------------
+#1. Landing page (just buttons) ---
+def login_landing_view(request):
+    return render(request, 'reservation/login_landing.html')
+
+
+#2. Student Login Page ---
+def login_student_view(request):
     if request.method == 'POST':
         form = AuthenticationForm(request, data=request.POST)
         if form.is_valid():
-            username = form.cleaned_data.get('username')
-            password = form.cleaned_data.get('password')
-            user = authenticate(username=username, password=password)
-            if user is not None:
+            user = form.get_user()
+            # --- Check role ---
+            if hasattr(user, 'student') and not user.managed_labs.exists():
                 login(request, user)
-
-                if user.is_superuser:
-                    return redirect('admin_dashboard')
-
-                if user.managed_labs.exists():
-                    return redirect('teacher_dashboard')
-
-                elif hasattr(user, 'student'):
-                    return redirect('lab_list')
-
-                else:
-                    return redirect('login')
+                return redirect('lab_list')
+            else:
+                messages.error(request, 'This account is not a regular student account.')
     else:
         form = AuthenticationForm()
-    return render(request, 'reservation/login.html', {'form': form})
+
+    return render(request, 'reservation/login_form.html', {
+        'form': form,
+        'title': 'Student Login'
+    })
+
+
+#3. Teacher / Assistant Login Page ---
+def login_teacher_view(request):
+    if request.method == 'POST':
+        form = AuthenticationForm(request, data=request.POST)
+        if form.is_valid():
+            user = form.get_user()
+            # --- Check role ---
+            if user.managed_labs.exists():
+                login(request, user)
+                return redirect('teacher_dashboard')
+            else:
+                messages.error(request, 'This account does not have lab manager privileges.')
+    else:
+        form = AuthenticationForm()
+
+    return render(request, 'reservation/login_form.html', {
+        'form': form,
+        'title': 'Teacher / Assistant Login'
+    })
+
+
+#4. Admin Login Page ---
+def login_admin_view(request):
+    if request.method == 'POST':
+        form = AuthenticationForm(request, data=request.POST)
+        if form.is_valid():
+            user = form.get_user()
+            # --- Check role ---
+            if user.is_superuser:
+                login(request, user)
+                return redirect('admin_dashboard')
+            else:
+                messages.error(request, 'This account is not a system administrator.')
+    else:
+        form = AuthenticationForm()
+
+    return render(request, 'reservation/login_form.html', {
+        'form': form,
+        'title': 'Admin Login'
+    })
 
 
 def logout_view(request):
     logout(request)
-    return redirect('login')
+    return redirect('login_landing')
 
 
 # ------------------- 2. Admin Views -------------------
@@ -119,14 +213,15 @@ def admin_dashboard(request):
             except User.DoesNotExist:
                 pass
             return redirect('admin_dashboard')
+
         elif 'delete_lab' in request.POST:
-                lab_id_to_delete = request.POST.get('lab_id')
-                try:
-                    lab_to_delete = Laboratory.objects.get(pk=lab_id_to_delete)
-                    lab_to_delete.delete() 
-                except Laboratory.DoesNotExist:
-                    pass
-                return redirect('admin_dashboard')
+            lab_id_to_delete = request.POST.get('lab_id')
+            try:
+                lab_to_delete = Laboratory.objects.get(pk=lab_id_to_delete)
+                lab_to_delete.delete()
+            except Laboratory.DoesNotExist:
+                pass
+            return redirect('admin_dashboard')
 
     all_students = Student.objects.all()
     all_teachers = Teacher.objects.all()
@@ -210,9 +305,7 @@ def lab_list(request):
         return redirect('login')
 
     labs = Laboratory.objects.all()
-    context = {
-        'laboratories': labs
-    }
+    context = {'laboratories': labs}
     return render(request, 'reservation/lab_list.html', context)
 
 
@@ -267,7 +360,7 @@ def create_reservation(request, computer_id):
             ).exists()
 
             if time_overlap:
-                messages.error(request, 'Bu bilgisayar belirtilen saatte zaten rezerve edilmiştir.')
+                messages.error(request, 'This computer is already reserved for the selected time.')
                 return redirect('create_reservation', computer_id=computer.bilgisayar_id)
 
             student_reservations_today = Reservation.objects.filter(
@@ -282,21 +375,21 @@ def create_reservation(request, computer_id):
                 duration_new_reservation = (end_time_obj - start_time_obj).total_seconds() / 60
 
                 if duration_new_reservation <= 0:
-                    messages.error(request, 'Bitiş saati başlangıç saatinden sonra olmalıdır.')
+                    messages.error(request, 'End time must be after start time.')
                     return redirect('create_reservation', computer_id=computer.bilgisayar_id)
 
             except ValueError:
-                messages.error(request, 'Saat formatı hatalı.')
+                messages.error(request, 'Invalid time format.')
                 return redirect('create_reservation', computer_id=computer.bilgisayar_id)
 
             total_duration_minutes = 0
             for res in student_reservations_today:
-                duration = (datetime.combine(tarih, res.bitis_saati) - 
+                duration = (datetime.combine(tarih, res.bitis_saati) -
                             datetime.combine(tarih, res.baslangic_saati)).total_seconds() / 60
                 total_duration_minutes += duration
 
             if (total_duration_minutes + duration_new_reservation) > 120:
-                messages.error(request, 'Günlük maksimum 2 saat rezervasyon hakkınızı aştınız.')
+                messages.error(request, 'You exceeded the daily maximum reservation limit (2 hours).')
                 return redirect('create_reservation', computer_id=computer.bilgisayar_id)
 
             other_lab_reservation = student_reservations_today.exclude(
@@ -304,13 +397,16 @@ def create_reservation(request, computer_id):
             ).exists()
 
             if other_lab_reservation:
-                messages.error(request, 'Bir gün içinde yalnızca bir laboratuvarda rezervasyon yapabilirsiniz.')
+                messages.error(request, 'You can reserve only one lab per day.')
                 return redirect('create_reservation', computer_id=computer.bilgisayar_id)
 
             lab = computer.lab
             if lab.operating_start_time and lab.operating_end_time:
                 if (baslangic_saati < lab.operating_start_time) or (bitis_saati > lab.operating_end_time):
-                    messages.error(request, f'Rezervasyon saatleri laboratuvar çalışma saatleri ({lab.operating_start_time} - {lab.operating_end_time}) dışında olamaz.')
+                    messages.error(
+                        request,
+                        f'Reservation times must be within lab operating hours ({lab.operating_start_time} - {lab.operating_end_time}).'
+                    )
                     return redirect('create_reservation', computer_id=computer.bilgisayar_id)
 
             reservation = form.save(commit=False)
@@ -318,16 +414,13 @@ def create_reservation(request, computer_id):
             reservation.ogrenci = student
             reservation.save()
 
-            messages.success(request, 'Rezervasyon talebiniz gönderildi ve onay bekliyor.')
+            messages.success(request, 'Your reservation request has been sent for approval.')
             return redirect('my_reservations')
 
     else:
         form = ReservationForm()
 
-    context = {
-        'form': form,
-        'computer': computer
-    }
+    context = {'form': form, 'computer': computer}
     return render(request, 'reservation/create_reservation.html', context)
 
 
@@ -339,9 +432,7 @@ def my_reservations(request):
     student = request.user.student
     reservations = Reservation.objects.filter(ogrenci=student).order_by('-tarih', '-baslangic_saati')
 
-    context = {
-        'reservations': reservations
-    }
+    context = {'reservations': reservations}
     return render(request, 'reservation/my_reservations.html', context)
 
 
